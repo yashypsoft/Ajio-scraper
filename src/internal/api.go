@@ -30,8 +30,8 @@ type Product struct {
 
 func FetchPages(ctx context.Context, wg *sync.WaitGroup, results chan<- Product, failedPages chan<- int) {
 	startPage := 1
-	totalPages := 2
-	concurrencyLimit := 100
+	totalPages := 22550
+	concurrencyLimit := 1000
 	semaphore := make(chan struct{}, concurrencyLimit)
 
 	// Launch goroutines for each page
@@ -99,7 +99,6 @@ func getAjioData(page int) ([]Product, error) {
 }
 
 func parseProduct(data map[string]interface{}) Product {
-	log.Println(getString(data, "images"))
 	return Product{
 		Code:       getString(data, "code"),
 		BrandName:  getString(data, "fnlColorVariantData.brandName"),

@@ -27,7 +27,6 @@ func ProcessResults(ctx context.Context, dbClient *MySQLClient, telegramBot *Tel
 				continue
 			}
 			processed++
-			log.Printf("Processed product: %d", processed)
 			// Add product to buffer for batch insertion into ajio_products
 			buffer = append(buffer, product)
 
