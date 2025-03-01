@@ -30,7 +30,7 @@ type Product struct {
 
 func FetchPages(ctx context.Context, wg *sync.WaitGroup, results chan<- Product, failedPages chan<- int, telegramBot *TelegramBot) {
 	startPage := 1
-	totalPages := 22550
+	totalPages := 23400
 	concurrencyLimit := 1000
 	semaphore := make(chan struct{}, concurrencyLimit)
 
