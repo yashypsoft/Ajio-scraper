@@ -97,8 +97,6 @@ func (c *MySQLClient) InsertProductAndHistory(products []Product) error {
 	}
 	defer tx.Rollback() // Rollback in case of an error
 
-	log.Println("Inserting products and history...")
-
 	// Prepare the bulk insert query for ajio_products
 	insertProductQuery := `
         INSERT INTO ajio_products (
@@ -166,8 +164,6 @@ func (c *MySQLClient) InsertProductAndHistory(products []Product) error {
 		log.Printf("Error inserting products into ajio_product_history: %v", err)
 		return err
 	}
-
-	log.Println("Inserted products and history successfully.")
 
 	// Commit the transaction
 	return tx.Commit()
