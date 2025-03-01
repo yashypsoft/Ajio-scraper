@@ -6,16 +6,14 @@ import (
 	"log"
 	"os"
 	"sync"
-
-	"github.com/joho/godotenv"
 )
 
 func main() {
 	log.Println("Starting Ajio Scraper...")
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
-	}
+	// err := godotenv.Load()
+	// if err != nil {
+	// 	log.Fatalf("Error loading .env file: %v", err)
+	// }
 
 	// Load environment variables
 	telegramToken := os.Getenv("TELEGRAM_BOT_TOKEN")
