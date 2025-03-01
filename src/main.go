@@ -33,7 +33,7 @@ func main() {
 	results := make(chan internal.Product, 1000)
 	failedPages := make(chan int, 22550)
 
-	go internal.FetchPages(ctx, &wg, results, failedPages)
+	go internal.FetchPages(ctx, &wg, results, failedPages, telegramBot)
 	internal.ProcessResults(ctx, dbClient, telegramBot, results, failedPages, &wg)
 
 	wg.Wait()

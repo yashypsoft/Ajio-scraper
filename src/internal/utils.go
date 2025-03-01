@@ -2,7 +2,6 @@ package internal
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -46,10 +45,6 @@ func ProcessResults(ctx context.Context, dbClient *MySQLClient, telegramBot *Tel
 			}
 			failed++
 			log.Printf("Failed page: %d", page)
-		case <-ticker.C:
-			if processed%1000 == 0 { // Send updates every 1000 products
-				telegramBot.SendMessage(fmt.Sprintf("Processed: %d, Failed: %d", processed, failed))
-			}
 		}
 
 		// Exit the loop if both channels are closed
