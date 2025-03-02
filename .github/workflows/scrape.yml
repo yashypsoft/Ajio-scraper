@@ -54,15 +54,7 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: '1.21'
-          cache: true  # ✅ Enable caching with a unique key
-
-      - name: Cache Go modules
-        uses: actions/cache@v4
-        with:
-          path: ~/go/pkg/mod
-          key: setup-go-${{ runner.os }}-go-${{ matrix.go-version }}-${{ github.run_id }}
-          restore-keys: |
-            setup-go-${{ runner.os }}-go-${{ matrix.go-version }}-
+          cache: false  # ✅ Enable caching with a unique key
 
       - name: Install dependencies
         run: go mod tidy
