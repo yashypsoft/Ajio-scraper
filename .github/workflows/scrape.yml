@@ -25,15 +25,17 @@ jobs:
       - name: Generate matrix
         id: set-matrix
         run: |
-          start_page=${{ github.event.inputs.start_page }}
-          end_page=${{ github.event.inputs.end_page }}
-          batch_size=${{ github.event.inputs.batch_size }}
+          start_page=$((${GITHUB_EVENT_INPUTS_START_PAGE}))
+          end_page=$((${GITHUB_EVENT_INPUTS_END_PAGE}))
+          batch_size=$((${GITHUB_EVENT_INPUTS_BATCH_SIZE}))
+
           ranges=()
           for ((i=start_page; i<=end_page; i+=batch_size)); do
             end=$((i+batch_size-1))
             if [ "$end" -gt "$end_page" ]; then end=$end_page; fi
             ranges+=("{\"start\":$i,\"end\":$end}")
           done
+          
           matrix="{\"page_range\":[$(IFS=,; echo "${ranges[*]}")]}"
           echo "matrix=$matrix" >> $GITHUB_ENV
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
@@ -52,6 +54,15 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: '1.21'
+          cache: true  # ✅ Enable caching with a unique key
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: ~/go/pkg/mod
+          key: setup-go-${{ runner.os }}-go-${{ matrix.go-version }}-${{ github.run_id }}
+          restore-keys: |
+            setup-go-${{ runner.os }}-go-${{ matrix.go-version }}-
 
       - name: Install dependencies
         run: go mod tidy
