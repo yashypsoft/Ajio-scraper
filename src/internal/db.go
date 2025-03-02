@@ -28,67 +28,6 @@ func NewMySQLClient() *MySQLClient {
 	return &MySQLClient{DB: db}
 }
 
-// func (c *MySQLClient) InsertProducts(products []Product) error {
-// 	query := fmt.Sprintf(`
-//         INSERT INTO %s (
-//             code, brandName, colorGroup, imageUrl, price, wasPrice, name, brandType, url, offerPrice, segment, vertical, brick
-//         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-//         ON DUPLICATE KEY UPDATE
-//             brandName = VALUES(brandName),
-//             colorGroup = VALUES(colorGroup),
-//             imageUrl = VALUES(imageUrl),
-//             price = VALUES(price),
-//             wasPrice = VALUES(wasPrice),
-//             name = VALUES(name),
-//             brandType = VALUES(brandType),
-//             url = VALUES(url),
-//             offerPrice = VALUES(offerPrice),
-//             segment = VALUES(segment),
-//             vertical = VALUES(vertical),
-//             brick = VALUES(brick)
-//     `, os.Getenv("MYSQL_AJIO_TABLE"))
-
-// 	stmt, err := c.DB.Prepare(query)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	defer stmt.Close()
-
-// 	for _, product := range products {
-// 		_, err := stmt.Exec(
-// 			product.Code, product.BrandName, product.ColorGroup, product.ImageURL,
-// 			product.Price, product.WasPrice, product.Name, product.BrandType,
-// 			product.URL, product.OfferPrice, product.Segment, product.Vertical, product.Brick,
-// 		)
-// 		if err != nil {
-// 			log.Printf("Error inserting product %s: %v", product.Code, err)
-// 		}
-// 	}
-
-// 	return nil
-// }
-
-// func (c *MySQLClient) InsertProductHistory(products []Product) error {
-// 	query := `
-//         INSERT INTO ajio_product_history (code, price, wasPrice, offerPrice)
-//         VALUES (?, ?, ?, ?)
-//     `
-// 	stmt, err := c.DB.Prepare(query)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	defer stmt.Close()
-
-// 	for _, product := range products {
-// 		_, err := stmt.Exec(product.Code, product.Price, product.WasPrice, product.OfferPrice)
-// 		if err != nil {
-// 			log.Printf("Error inserting product history for %s: %v", product.Code, err)
-// 		}
-// 	}
-
-// 	return nil
-// }
-
 func (c *MySQLClient) InsertProductAndHistory(products []Product) error {
 	// Start a transaction
 	tx, err := c.DB.Begin()
