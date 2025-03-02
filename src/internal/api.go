@@ -32,14 +32,12 @@ func FetchPages(ctx context.Context, wg *sync.WaitGroup, results chan<- Product,
 	concurrencyLimit := 1000
 	semaphore := make(chan struct{}, concurrencyLimit)
 
-	// Track the total number of pages processed
-	var pageCount int
-	const batchSize = 1000 // Send a Telegram message every 1000 pages
-
-	// Launch goroutines for each page in the range
+	// Launch goroutines for each page
 	for i := startPage; i <= endPage; i++ {
 		select {
 		case <-ctx.Done():
+			close(results)
+			close(failedPages)
 			return
 		default:
 			wg.Add(1)
@@ -71,20 +69,6 @@ func FetchPages(ctx context.Context, wg *sync.WaitGroup, results chan<- Product,
 				for _, product := range data {
 					results <- product
 				}
-
-				// Increment the page count
-				pageCount++
-
-				// Send a Telegram message when 1000 pages are processed
-				if pageCount%batchSize == 0 {
-					go func(count int) {
-						message := fmt.Sprintf("Processed %d pages", count)
-						err := telegramBot.SendMessage(message)
-						if err != nil {
-							log.Printf("Failed to send Telegram message: %v", err)
-						}
-					}(pageCount)
-				}
 			}(i)
 		}
 	}
@@ -94,15 +78,6 @@ func FetchPages(ctx context.Context, wg *sync.WaitGroup, results chan<- Product,
 		wg.Wait()
 		close(results)
 		close(failedPages)
-
-		// Send a final Telegram message with the total page count
-		go func(count int) {
-			message := fmt.Sprintf("Scraping completed. Total pages processed: %d", count)
-			err := telegramBot.SendMessage(message)
-			if err != nil {
-				log.Printf("Failed to send final Telegram message: %v", err)
-			}
-		}(pageCount)
 	}()
 }
 func getAjioData(page int) ([]Product, error) {

@@ -11,6 +11,8 @@ import (
 
 func main() {
 	log.Println("Starting Ajio Scraper...")
+
+	// Load environment variables
 	// err := godotenv.Load()
 	// if err != nil {
 	// 	log.Fatalf("Error loading .env file: %v", err)
@@ -23,7 +25,7 @@ func main() {
 
 	log.Printf("Scraping pages from %d to %d...", *startPage, *endPage)
 
-	// Load environment variables
+	// Load required environment variables
 	telegramToken := os.Getenv("TELEGRAM_BOT_TOKEN")
 	telegramChatID := os.Getenv("TELEGRAM_CHAT_ID")
 

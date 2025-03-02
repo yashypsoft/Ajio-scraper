@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -17,19 +18,14 @@ func ProcessResults(ctx context.Context, dbClient *MySQLClient, telegramBot *Tel
 	for {
 		select {
 		case <-ctx.Done():
-			// Context canceled, exit the loop
 			return
 		case product, ok := <-results:
 			if !ok {
-				// Channel closed, disable this case
-				results = nil
+				results = nil // Disable this case
 				continue
 			}
 			processed++
-			// Add product to buffer for batch insertion into ajio_products
 			buffer = append(buffer, product)
-
-			// Insert batch if buffer is full
 			if len(buffer) >= 1000 {
 				err := dbClient.InsertProductAndHistory(buffer)
 				if err != nil {
@@ -39,12 +35,15 @@ func ProcessResults(ctx context.Context, dbClient *MySQLClient, telegramBot *Tel
 			}
 		case page, ok := <-failedPages:
 			if !ok {
-				// Channel closed, disable this case
-				failedPages = nil
+				failedPages = nil // Disable this case
 				continue
 			}
 			failed++
 			log.Printf("Failed page: %d", page)
+		case <-ticker.C:
+			if processed%1000 == 0 { // Send updates every 1000 products
+				telegramBot.SendMessage(fmt.Sprintf("Processed: %d, Failed: %d", processed, failed))
+			}
 		}
 
 		// Exit the loop if both channels are closed
