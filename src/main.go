@@ -3,6 +3,7 @@ package main
 import (
 	"ajio-scraper/src/internal"
 	"context"
+	"flag"
 	"log"
 	"os"
 	"sync"
@@ -14,6 +15,13 @@ func main() {
 	// if err != nil {
 	// 	log.Fatalf("Error loading .env file: %v", err)
 	// }
+
+	// Parse command-line arguments
+	startPage := flag.Int("start-page", 0, "Start page number")
+	endPage := flag.Int("end-page", 23400, "End page number")
+	flag.Parse()
+
+	log.Printf("Scraping pages from %d to %d...", *startPage, *endPage)
 
 	// Load environment variables
 	telegramToken := os.Getenv("TELEGRAM_BOT_TOKEN")
@@ -31,9 +39,9 @@ func main() {
 
 	var wg sync.WaitGroup
 	results := make(chan internal.Product, 1000)
-	failedPages := make(chan int, 22550)
+	failedPages := make(chan int, *endPage-*startPage+1)
 
-	go internal.FetchPages(ctx, &wg, results, failedPages, telegramBot)
+	go internal.FetchPages(ctx, &wg, results, failedPages, telegramBot, *startPage, *endPage)
 	internal.ProcessResults(ctx, dbClient, telegramBot, results, failedPages, &wg)
 
 	wg.Wait()

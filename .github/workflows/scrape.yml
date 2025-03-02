@@ -1,27 +1,65 @@
-name: Scrape Ajio Data
+name: Scrape Ajio Pages
 
 on:
-  schedule:
-    - cron: "0 0 * * *" # cron: "0 0 * * *"  # Runs at midnight (00:00) every day
   workflow_dispatch:
+    inputs:
+      start_page:
+        description: 'Start Page'
+        required: true
+        default: '0'
+      end_page:
+        description: 'End Page'
+        required: true
+        default: '23400'
+      batch_size:
+        description: 'Batch Size (Pages per Job)'
+        required: true
+        default: '100'
 
 jobs:
-  scrape:
+  prepare-matrix:
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - name: Checkout Code
+      - name: Generate matrix
+        id: set-matrix
+        run: |
+          start_page=${{ github.event.inputs.start_page }}
+          end_page=${{ github.event.inputs.end_page }}
+          batch_size=${{ github.event.inputs.batch_size }}
+          ranges=()
+          for ((i=start_page; i<=end_page; i+=batch_size)); do
+            end=$((i+batch_size-1))
+            if [ "$end" -gt "$end_page" ]; then end=$end_page; fi
+            ranges+=("{\"start\":$i,\"end\":$end}")
+          done
+          matrix="{\"page_range\":[$(IFS=,; echo "${ranges[*]}")]}"
+          echo "matrix=$matrix" >> $GITHUB_ENV
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+
+  scrape-pages:
+    needs: prepare-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
+
+    steps:
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set Up Go
-        uses: actions/setup-go@v3
+      - name: Set up Go
+        uses: actions/setup-go@v4
         with:
-          go-version: "1.24"
+          go-version: '1.21'
 
-      - name: Build and Run
-        run: |
-          cd src
-          go build -o scraper .
-          ./scraper
+      - name: Install dependencies
+        run: go mod tidy
+
+      - name: Build scraper
+        run: go build -o scraper ./src
+
+      - name: Run scraper for page range
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -30,4 +68,11 @@ jobs:
           MYSQL_USERNAME: ${{ secrets.MYSQL_USERNAME }}
           MYSQL_PASS: ${{ secrets.MYSQL_PASS }}
           MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
-          MYSQL_AJIO_TABLE: ${{ secrets.MYSQL_AJIO_TABLE }}
+        run: |
+          ./scraper --start-page ${{ matrix.page_range.start }} --end-page ${{ matrix.page_range.end }}
+
+      - name: Upload results (if needed)
+        uses: actions/upload-artifact@v3
+        with:
+          name: results-${{ matrix.page_range.start }}-${{ matrix.page_range.end }}
+          path: ./results/

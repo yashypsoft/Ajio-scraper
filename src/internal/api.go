@@ -28,9 +28,7 @@ type Product struct {
 	Brick      string  `json:"brick"`
 }
 
-func FetchPages(ctx context.Context, wg *sync.WaitGroup, results chan<- Product, failedPages chan<- int, telegramBot *TelegramBot) {
-	startPage := 17000
-	totalPages := 23400
+func FetchPages(ctx context.Context, wg *sync.WaitGroup, results chan<- Product, failedPages chan<- int, telegramBot *TelegramBot, startPage, endPage int) {
 	concurrencyLimit := 1000
 	semaphore := make(chan struct{}, concurrencyLimit)
 
@@ -38,8 +36,8 @@ func FetchPages(ctx context.Context, wg *sync.WaitGroup, results chan<- Product,
 	var pageCount int
 	const batchSize = 1000 // Send a Telegram message every 1000 pages
 
-	// Launch goroutines for each page
-	for i := startPage; i <= totalPages; i++ {
+	// Launch goroutines for each page in the range
+	for i := startPage; i <= endPage; i++ {
 		select {
 		case <-ctx.Done():
 			return
@@ -50,12 +48,23 @@ func FetchPages(ctx context.Context, wg *sync.WaitGroup, results chan<- Product,
 				defer wg.Done()
 				defer func() { <-semaphore }()
 
-				// log.Printf("Fetching page %d", page)
-				data, err := getAjioData(page)
-				if err != nil {
-					log.Printf("Failed to fetch page %d: %v", page, err)
-					failedPages <- page
-					return
+				// Retry logic: Try fetching the page up to 3 times
+				maxRetries := 3
+				var data []Product
+				var err error
+				for attempt := 1; attempt <= maxRetries; attempt++ {
+					log.Printf("Fetching page %d (Attempt %d/%d)", page, attempt, maxRetries)
+					data, err = getAjioData(page)
+					if err == nil {
+						break // Success, exit retry loop
+					}
+					log.Printf("Failed to fetch page %d (Attempt %d/%d): %v", page, attempt, maxRetries, err)
+					if attempt == maxRetries {
+						// Mark the page as failed after all retries
+						log.Printf("Marking page %d as failed after %d attempts", page, maxRetries)
+						failedPages <- page
+						return
+					}
 				}
 
 				log.Printf("Processing %d products from page %d", len(data), page)
@@ -115,7 +124,20 @@ func getAjioData(page int) ([]Product, error) {
 		return nil, err
 	}
 
-	products := result["products"].([]interface{})
+	// Check if "products" key exists and is not nil
+	productsRaw, ok := result["products"]
+	if !ok || productsRaw == nil {
+		log.Printf("No products found for page %d", page)
+		return nil, nil // Return an empty slice if no products are found
+	}
+
+	// Ensure "products" is a slice of interfaces
+	products, ok := productsRaw.([]interface{})
+	if !ok {
+		log.Printf("Unexpected type for 'products' key on page %d: %T", page, productsRaw)
+		return nil, fmt.Errorf("unexpected type for 'products' key")
+	}
+
 	var productList []Product
 	for _, p := range products {
 		product := parseProduct(p.(map[string]interface{}))
