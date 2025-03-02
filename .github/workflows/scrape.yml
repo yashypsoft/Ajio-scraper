@@ -1,6 +1,8 @@
 name: Scrape Ajio Pages
 
 on:
+  schedule:
+    - cron: "0 20 * * *"  # Runs at 2 AM IST daily
   workflow_dispatch:
     inputs:
       start_page:
@@ -54,7 +56,7 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: '1.21'
-          cache: false  # ✅ Enable caching with a unique key
+          cache: false
 
       - name: Install dependencies
         run: go mod tidy
