@@ -29,7 +29,7 @@ type Product struct {
 }
 
 func FetchPages(ctx context.Context, wg *sync.WaitGroup, results chan<- Product, failedPages chan<- int, telegramBot *TelegramBot) {
-	startPage := 1
+	startPage := 17000
 	totalPages := 23400
 	concurrencyLimit := 1000
 	semaphore := make(chan struct{}, concurrencyLimit)
@@ -50,7 +50,7 @@ func FetchPages(ctx context.Context, wg *sync.WaitGroup, results chan<- Product,
 				defer wg.Done()
 				defer func() { <-semaphore }()
 
-				log.Printf("Fetching page %d", page)
+				// log.Printf("Fetching page %d", page)
 				data, err := getAjioData(page)
 				if err != nil {
 					log.Printf("Failed to fetch page %d: %v", page, err)
