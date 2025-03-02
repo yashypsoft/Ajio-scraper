@@ -25,9 +25,9 @@ jobs:
       - name: Generate matrix
         id: set-matrix
         run: |
-          start_page=$((${GITHUB_EVENT_INPUTS_START_PAGE}))
-          end_page=$((${GITHUB_EVENT_INPUTS_END_PAGE}))
-          batch_size=$((${GITHUB_EVENT_INPUTS_BATCH_SIZE}))
+          start_page=${{ github.event.inputs.start_page }}
+          end_page=${{ github.event.inputs.end_page }}
+          batch_size=${{ github.event.inputs.batch_size }}
 
           ranges=()
           for ((i=start_page; i<=end_page; i+=batch_size)); do
