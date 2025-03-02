@@ -14,7 +14,7 @@ on:
       batch_size:
         description: 'Batch Size (Pages per Job)'
         required: true
-        default: '100'
+        default: '1000'
 
 jobs:
   prepare-matrix:
