@@ -49,7 +49,7 @@ func (c *MySQLClient) InsertProductAndHistory(products []Product) error {
             wasPrice = VALUES(wasPrice),
             name = VALUES(name),
             brandType = VALUES(brandType),
-            url = VALUES(url),
+            code = VALUES(code),
             offerPrice = VALUES(offerPrice),
             segment = VALUES(segment),
             vertical = VALUES(vertical),
@@ -81,7 +81,7 @@ func (c *MySQLClient) InsertProductAndHistory(products []Product) error {
 
 	// Prepare the bulk insert query for ajio_product_history
 	insertHistoryQuery := `
-        INSERT INTO ajio_product_history (code, price, wasPrice, offerPrice)
+        INSERT INTO ajio_product_history (url, price, wasPrice, offerPrice)
         VALUES %s
     `
 
@@ -93,7 +93,7 @@ func (c *MySQLClient) InsertProductAndHistory(products []Product) error {
 			historyValues += ","
 		}
 		historyValues += "(?, ?, ?, ?)"
-		historyArgs = append(historyArgs, product.Code, product.Price, product.WasPrice, product.OfferPrice)
+		historyArgs = append(historyArgs, product.URL, product.Price, product.WasPrice, product.OfferPrice)
 	}
 
 	// Execute the bulk insert for ajio_product_history
