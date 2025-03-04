@@ -24,12 +24,25 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
+      - name: Set defaults for scheduled run
+        id: set-vars
+        run: |
+          if [ -z "${{ github.event.inputs.start_page }}" ]; then
+            echo "START_PAGE=1" >> $GITHUB_ENV
+            echo "END_PAGE=23400" >> $GITHUB_ENV
+            echo "BATCH_SIZE=100" >> $GITHUB_ENV
+          else
+            echo "START_PAGE=${{ github.event.inputs.start_page }}" >> $GITHUB_ENV
+            echo "END_PAGE=${{ github.event.inputs.end_page }}" >> $GITHUB_ENV
+            echo "BATCH_SIZE=${{ github.event.inputs.batch_size }}" >> $GITHUB_ENV
+          fi
+
       - name: Generate matrix
         id: set-matrix
         run: |
-          start_page=${{ github.event.inputs.start_page }}
-          end_page=${{ github.event.inputs.end_page }}
-          batch_size=${{ github.event.inputs.batch_size }}
+          start_page=$START_PAGE
+          end_page=$END_PAGE
+          batch_size=$BATCH_SIZE
 
           ranges=()
           for ((i=start_page; i<=end_page; i+=batch_size)); do
