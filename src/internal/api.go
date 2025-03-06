@@ -90,7 +90,16 @@ func getAjioData(page int) ([]Product, error) {
 	}
 
 	// Set User-Agent header
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+	req.Header.Add("Referer", "https://www.ajio.com/c/83")
+	req.Header.Add("sec-ch-ua", "\"Not(A:Brand\";v=\"99\", \"Brave\";v=\"133\", \"Chromium\";v=\"133\"")
+	req.Header.Add("sec-ch-ua-mobile", "?0")
+	req.Header.Add("ai", "www.ajio.com")
+	req.Header.Add("clientip", "115.246.27.142, 23.52.73.64, 23.213.1.29, 23.35.149.4, 23.197.28.137, 10.129.72.6")
+	req.Header.Add("vr", "WEB-1.15.0")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36")
+	req.Header.Add("accept", "application/json")
+	req.Header.Add("os", "4")
+	req.Header.Add("ua", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36")
 
 	// Send the request using a client
 	client := &http.Client{}
