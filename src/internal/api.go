@@ -81,8 +81,20 @@ func FetchPages(ctx context.Context, wg *sync.WaitGroup, results chan<- Product,
 	}()
 }
 func getAjioData(page int) ([]Product, error) {
-	url := fmt.Sprintf("https://www.ajio.com/api/category/83?fields=SITE&currentPage=%d&pageSize=100&format=json&query=:newn&sortBy=newn", page)
-	resp, err := http.Get(url)
+	url := fmt.Sprintf("https://www.ajio.com/api/category/83?fields=SITE&currentPage=%d&pageSize=100&format=json&query=%%3Arelevance&gridColumns=3&advfilter=true&platform=Desktop&showAdsOnNextPage=false&is_ads_enable_plp=true&displayRatings=true&segmentIds=", page)
+
+	// Create a new HTTP request
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// Set User-Agent header
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+
+	// Send the request using a client
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
